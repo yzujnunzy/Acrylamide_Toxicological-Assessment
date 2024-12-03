@@ -28,7 +28,7 @@ def main(args):
     concentrations = os.listdir(path)
     result = [[0]*9 for i in range(9)]
 
-    #加载与预处理图片
+    #Loading and Preprocessing Images
     def load_and_preprocress_image(image_path):
         data_transform = transforms.Compose(
             [transforms.Resize(256),
@@ -42,12 +42,12 @@ def main(args):
 
     for i,concentration in enumerate(concentrations):
 
-        #外层浓度
+        #Outer layer concentration
         path_concentrations = os.path.join(path,concentration)
-        #里层图片进行循环
+        #The inner image is looped
         for path_concentration in os.listdir(path_concentrations):
             path_concentration_imgs = os.path.join(path_concentrations,path_concentration)
-            #单个图片中的小图
+            #Smaller images within a single image
             res = Counter()
             images = []
             if len(os.listdir(path_concentration_imgs))==0:
@@ -55,22 +55,22 @@ def main(args):
             for path_concentration_img in os.listdir(path_concentration_imgs):
                 r_path_concentration_img = os.path.join(path_concentration_imgs,path_concentration_img)
                 images.append(load_and_preprocress_image(r_path_concentration_img))
-            # 堆叠图片为一个批次
+            # Stacking images as a batch
             images_batch = torch.cat(images, dim=0)
-            # 把模型和图片批次也移动到GPU
+            # Move model and image batches to GPU as well
             if torch.cuda.is_available():
                 images_batch = images_batch.cuda()
                 model = model.cuda()
-            #开始预测
+            #Start forecasting
             with torch.no_grad():
                 output = model(images_batch)
-            # 获取每个图片属于各个类别的概率
+            # Get the probability that each image belongs to each category
             _, preds = torch.max(output, 1)
 
-            # 输出预测结果
+            # Output prediction results
             for pred in preds:
-                res[pred]+=1  # 打印每个图片的预测类别索引
-            # 使用most_common()找到出现次数最多的元素及其次数
+                res[pred]+=1  # Print the predicted category index for each image
+            # Use most_common() to find the element with the most occurrences and their counts
             most_common_element = res.most_common(1)[0][0]
             result[i][int(most_common_element)]+=1
     rea = [0, 50, 100, 200, 300, 400, 500, 1000]
@@ -98,9 +98,9 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights_path',type=str,default='./weights/resnet_34.pth')
-    parser.add_argument('--pre_data',type=str,default='../data/val')
-    parser.add_argument('--save_path',type=str,default='./result.txt')
+    parser.add_argument('--weights_path',type=str,default='XXX')
+    parser.add_argument('--pre_data',type=str,default='XXX')
+    parser.add_argument('--save_path',type=str,default='XXX')
 
     opt = parser.parse_args()
     main(opt)

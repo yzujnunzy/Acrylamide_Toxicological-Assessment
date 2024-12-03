@@ -1,10 +1,5 @@
 # 引入了Inception结构（融合不同尺度的特征信息）
-'''
-使用1*1的卷积核进行降维以及映射处理
-添加两个辅助分类器帮助训练
-丢弃全连接层，使用平均池化层（大大减少模型参数）
-且GoogleNet有3个输出层，其中两个是辅助分类层
-'''
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -36,13 +31,13 @@ class GoogleNet(nn.Module):
 
         self.inception5a=Inception(832,256,160,320,32,128,128)
         self.inception5b=Inception(832,384,192,384,48,128,128)
-        #如果使用辅助分类器
+        #If an auxiliary classifier is used
         if aux_logits:
             self.aux1=InceptionAux(512,num_classes)
             self.aux2=InceptionAux(528,num_classes)
 
-        #平均池化层
-        self.avgpool=nn.AdaptiveAvgPool2d((1,1))#自适应平均池化层，不管输入多大图像，得到的都是高为1，宽为1的矩阵
+        #Average pooling layer
+        self.avgpool=nn.AdaptiveAvgPool2d((1,1))#Adaptive average pooling layer, no matter how big the input image is, you get a matrix with height 1 and width 1
         self.dropout=nn.Dropout(0.4)
         self.fc=nn.Linear(1024,num_classes)
         if init_weight:
@@ -78,7 +73,7 @@ class GoogleNet(nn.Module):
         x=self.inception4a(x)
         #Nx512x14x14
 
-        #是否使用辅助分类器
+        #Whether to use auxiliary classifiers
         if self.training and self.aux_logits:
             aux1=self.aux1(x)
 
@@ -109,12 +104,12 @@ class GoogleNet(nn.Module):
 class Inception(nn.Module):
     def __int__(self, in_channels, ch1x1, ch3x3red, ch3x3, ch5x5red, ch5x5, pool_proj):
         super(Inception, self).__init__()
-        # 这几个分支必须保证输出大小相等
+        # These branches must ensure that the outputs are of equal size
         self.branch1 = BasicConv2d(in_channels, ch1x1, kernel_size=1)
 
         self.branch2 = nn.Sequential(
             BasicConv2d(in_channels, ch3x3red, kernel_size=1),
-            BasicConv2d(ch3x3red, ch3x3, kernel_size=3, padding=1)  # 保证输出大等于输入大小
+            BasicConv2d(ch3x3red, ch3x3, kernel_size=3, padding=1)  # Ensure that the output is large enough to equal the input size
         )
 
         self.branch3 = nn.Sequential(
@@ -134,11 +129,11 @@ class Inception(nn.Module):
         branch4 = self.branch4(x)
 
         outputs = [branch1, branch2, branch3, branch4]
-        # cat作用是对torch及进行链接，大小必须相同
-        return torch.cat(outputs, 1)  # 通道排列顺序：batch,channels,height,width dim=1 行
+        # The role of cat is to link to the torch and must be the same size.
+        return torch.cat(outputs, 1)  # Channel sequencing：batch,channels,height,width dim=1 行
 
 
-# 辅助分类器
+# auxiliary classifier
 class InceptionAux(nn.Module):
     def __init__(self, in_channels, num_classes):
         super(Inception, self).__init__()
@@ -155,7 +150,6 @@ class InceptionAux(nn.Module):
         x = self.conv(x)
         # Nx128x4x4
         x = torch.flatten(x, 1)
-        #在model.train()模式下，model.training=True,在model.eval()模式下，self.training=False
         x=F.dropout(x,0.5,training=self.training)
         #Nx2048
         x=F.relu(self.fc1(x),inplace=True)

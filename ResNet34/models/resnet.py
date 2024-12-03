@@ -1,9 +1,9 @@
-# GoogleNet的Inception模块是进行拼接，而ResNet的残差模块是进行相加
-# 引入了BN层，就是让当前batch的feature map的均值都满足0，方差1的分布
-# 建议将BN层放在Conv和ReLU之间
+# GoogleNet's Inception module does the splicing, while ResNet's residual module does the summation
+# The BN layer is introduced, which is to make the mean of the feature map of the current batch all satisfy a distribution of 0 and variance 1
+# 建议将BN层放在Conv和ReLU之间It is recommended that the BN layer be placed between Conv and ReLU
 import torch
 import torch.nn as nn
-# 通道注意力机制
+# Channeling Attention Mechanisms
 class ChannelAttention(nn.Module):
     def __init__(self, in_planes, ratio=16):
         super(ChannelAttention, self).__init__()
@@ -23,7 +23,7 @@ class ChannelAttention(nn.Module):
         return self.sigmoid(out)
 
 
-# 空间注意力机制
+# Spatial attention mechanisms
 class SpatialAttention(nn.Module):
     def __init__(self, kernel_size=7):
         super(SpatialAttention, self).__init__()
@@ -41,7 +41,7 @@ class SpatialAttention(nn.Module):
         x = self.conv1(x)
         return self.sigmoid(x)
 
-# 这是18层，34层的残差结构
+# This is the 18-layer, 34-layer residual structure
 class BasicBlock(nn.Module):
     expansion = 1
 
@@ -59,7 +59,7 @@ class BasicBlock(nn.Module):
     def forward(self, x):
         identity = x
         if self.downsample is not None:
-            identity = self.downsample(x)  # 下采样函数
+            identity = self.downsample(x)  # downsampling function
 
         out = self.conv1(x)
         out = self.bn1(out)
@@ -74,9 +74,9 @@ class BasicBlock(nn.Module):
         return out
 
 
-# 50，101，152的残差结构
+# 50, 101, 152 Residual structures
 class Bottleneck(nn.Module):
-    expansion = 4  # 扩大四倍，就是输出的深度是输入深度4倍
+    expansion = 4  # Expanded four times, that is, the depth of the output is four times the depth of the input
 
     def __init__(self, in_channel, out_channel, stride=1, downsample=None):
         super(Bottleneck, self).__init__()
@@ -118,7 +118,7 @@ class Bottleneck(nn.Module):
 class ResNet(nn.Module):
     def __init__(self, block, blocks_num, num_class=1000, include_top=True,attention=False):
         super(ResNet, self).__init__()
-        #是否使用注意力机制
+        #Whether or not to use attention mechanisms
         self.attention = attention
         self.include_top = include_top
         self.in_channel = 64
@@ -126,27 +126,27 @@ class ResNet(nn.Module):
         self.conv1 = nn.Conv2d(3, self.in_channel, kernel_size=7, stride=2, padding=3, bias=False)
         self.bn1 = nn.BatchNorm2d(self.in_channel)
         self.relu = nn.ReLU(inplace=True)
-        # 加入注意力机制
+        # Incorporation of the attention mechanism
         self.ca = ChannelAttention(self.in_channel)
         self.sa = SpatialAttention()
 
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        # 四大残差层
+        # the four residual layers
         self.layer1 = self._make_layer(block, 64, blocks_num[0])
         self.layer2 = self._make_layer(block, 128, blocks_num[1], stride=2)
         self.layer3 = self._make_layer(block, 256, blocks_num[2], stride=2)
 
 
         self.layer4 = self._make_layer(block, 512, blocks_num[3], stride=2)
-        # 网络的卷积层的最后一层加入注意力机制
+        # The last layer of the convolutional layer of the network incorporates an attention mechanism
         self.ca1 = ChannelAttention(self.in_channel)
         self.sa1 = SpatialAttention()
 
         if self.include_top:
-            self.avgpool = nn.AdaptiveAvgPool2d((1, 1))  # 自适应平均池化下采样
+            self.avgpool = nn.AdaptiveAvgPool2d((1, 1))  # Adaptive Average Pooling Downsampling
             self.fc = nn.Linear(512 * block.expansion, num_class)
 
-        # block是上面的BasicBlock or Bottleneck
+        # The block is the BasicBlock or Bottleneck above.
 
     def _make_layer(self, block, channel, block_num, stride=1):
         downsample = None

@@ -1,13 +1,13 @@
 import torch.nn as nn
 import torch
-#2012年
+#2012year
 class AlexNet(nn.Module):
     def __init__(self,num_class=1000,init_weights=False):
         super(AlexNet,self).__init__()
         self.features=nn.Sequential(
-            #使用了5层卷积层
+            #5 convolutional layers were used
             nn.Conv2d(3,48,kernel_size=5,stride=2,padding=1),#input[3,45,45] output[48,22,22]
-            nn.ReLU(inplace=True),#会改变输入数据的值,节省反复申请与释放内存的空间与时间,只是将原来的地址传递,效率更好
+            nn.ReLU(inplace=True),#It will change the value of the input data, saving the space and time of repeatedly requesting and releasing memory, and just passing the original address, which is more efficient.
             nn.MaxPool2d(kernel_size=3,stride=2),   #input[48,10,10]
 
             nn.Conv2d(48,128,kernel_size=5,padding=2),  #output[128,10,10]
@@ -27,7 +27,7 @@ class AlexNet(nn.Module):
         )
 
         self.classifier=nn.Sequential(
-            nn.Dropout(p=0.5),#每个神经元有0.5概率不激活
+            nn.Dropout(p=0.5),#Each neuron has a 0.5 probability of not activating
             nn.Linear(128*3*3,2048),
             nn.ReLU(inplace=True),
 

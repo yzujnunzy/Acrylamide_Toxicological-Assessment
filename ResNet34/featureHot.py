@@ -1,5 +1,5 @@
 '''
-1)导入相关的包并加载模型
+1)Import the relevant packages and load the model
 '''
 
 from pytorch_grad_cam import GradCAM, ScoreCAM, GradCAMPlusPlus, AblationCAM, XGradCAM, EigenCAM
@@ -30,9 +30,9 @@ def main(args):
     paths = args.inpath
     json_path = 'class_indices.json'
     path_imgs = os.listdir(paths)
-    # 加载 squeezenet1_1 预训练模型
+    # Loading squeezenet1_1 pre-trained model
     net = resnet34(num_class=8, attention=True)
-    model_weight_path = './weights/resnet34_21.pth'
+    model_weight_path = 'XXX'
     # net = densenet121(num_classes = 8)
     # model_weight_path = './weights/densenet_121_1.pth'
     net.load_state_dict(torch.load(model_weight_path), strict=False)
@@ -41,7 +41,7 @@ def main(args):
     target_layer = [net.features.denseblock3.denselayer18.conv2]
     for image_path in path_imgs:
         path_img = os.path.join(paths, image_path)
-        rgb_img = cv2.imread(path_img, 1)  # imread()读取的是BGR格式
+        rgb_img = cv2.imread(path_img, 1)  # imread() reads in BGR format
         rgb_img = Image.fromarray((rgb_img * 255).astype(np.uint8))
         transform = transforms.Compose([
             transforms.Resize((224,224)),
@@ -72,8 +72,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--inpath', type=str,
-                        default=r"../data/featureHot/data")
-    parser.add_argument('--outpath',type=str,default='../data/featureHot/result')
+                        default=r"XXX")
+    parser.add_argument('--outpath',type=str,default='XXX')
 
 
     opt = parser.parse_args()

@@ -33,7 +33,7 @@ def main(args):
 
     X = np.array(features)
 
-    #使用UMAP进行降维
+    #Dimensionality reduction using UMAP
     umap_model =umap.UMAP(n_neighbors=15,min_dist=0.1)
     embedding = umap_model.fit_transform(X)
     # print(embedding.shape)
@@ -55,25 +55,25 @@ def main(args):
              horizontalalignment='right', verticalalignment='top', transform=plt.gca().transAxes, fontsize=8)
     plt.show()
 
-    #使用kmeans进行聚类
+    #Clustering using kmeans
     kmeans = KMeans(n_clusters=4,random_state=42)
     kmeans.fit(embedding)
     labels = kmeans.labels_
     centers = kmeans.cluster_centers_
 
-    #找出距离每个聚类中心最近的样例
+    #Find the closest sample to each cluster center
     nearest_indices = []
     for center in centers:
-        #计算每个样例到当前聚类中心的距离
+        #Calculate the distance from each sample to the current clustering center
         distences = np.linalg.norm(embedding - center , axis=1)
-        #找到距离最小的样例的索引
+        #Find the index of the sample with the smallest distance
         nearest_index = np.argmin(distences)
         nearest_indices.append(nearest_index)
     dist_paths = []
     for nearest in nearest_indices:
         dist_paths.append(all_names[nearest])
     # import shutil
-    # save_path = r'D:\FoodAcademyCooperativeProgram\test\save_parh'
+    # save_path = r'XXX'
     # for path_one in dist_paths:
     #     label_ = path_one.split('-')[0]
     #     path_res = os.path.join(path,label_,path_one)
@@ -82,7 +82,7 @@ def main(args):
 
 
     colors = ['#F7776E','#6C8FC6','#F6C490','#1DBDC6']
-    #可视化UMAP降维后的2D数据
+    #可Visualizing 2D data after UMAP dimensionality reduction
     plt.figure(figsize=(12, 10))
     plt.scatter(embedding[:, 0], embedding[:, 1], c=[colors[i] for i in labels], cmap='viridis', marker='o',s=5)
     plt.colorbar(label='Cluster Label')
@@ -95,17 +95,17 @@ def main(args):
         names.append(i.split('-')[0])
 
     import pandas as pd
-    # 创建一个DataFrame来存储原始标签和聚类标签
+    # Create a DataFrame to store the original labels and clustered labels
     df = pd.DataFrame({
         'original_label': all_names,
         'cluster_label': labels
     })
     #
-    # # 计算每个聚类中每种标签的数量
+    # # Calculate the number of each label in each cluster
     result = df.groupby(['cluster_label', 'original_label']).size().unstack(fill_value=0)
 
 
-    #写入文件中进行记录
+    #Write to file for logging
     save_path = args.save_path
     result.to_csv(save_path, index=True)
     print(result)

@@ -21,17 +21,17 @@ def main(args):
     def evaluate_model(model, validate_loader):
         all_predictions = []
         all_labels = []
-        model.eval()  # 设置模型为评估模式
+        model.eval()  # Setting up the model for evaluation mode
         predictions = []
         labels = []
-        with torch.no_grad():  # 不需要计算梯度
+        with torch.no_grad():  # No need to calculate the gradient
             for data_test in validate_loader:
                 test_images, test_labels = data_test
                 outputs = model(test_images.to(device))
-                predict_y = torch.max(outputs, dim=1)[1]  # dim=1表示输出的是所在行的最大值，如果dim=0则表示输出所在列的最大值
+                predict_y = torch.max(outputs, dim=1)[1]  # dim = 1 means that the output is the maximum value of the row, if dim = 0 means that the output is the maximum value of the column.
                 all_predictions.extend(predict_y.cpu().numpy())
                 all_labels.extend(test_labels.cpu().numpy())
-                # 计算混淆矩阵
+                # Calculate the confusion matrix
         conf_matrix = confusion_matrix(all_labels, all_predictions, labels=range(8))
         return conf_matrix
     path =args.data
@@ -49,8 +49,8 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path',type=str,default='../data/test')
-    parser.add_argument('--weights_path',type=str,default='./weights/weights/Resnet34_224.pth')
+    parser.add_argument('--path',type=str,default='XXX')
+    parser.add_argument('--weights_path',type=str,default='XXX')
 
     opt = parser.parse_args()
     main(opt)

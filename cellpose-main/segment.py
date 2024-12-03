@@ -11,30 +11,30 @@ logger_setup()
 import argparse
 
 def main(args):
-    # 设置图像文件夹路径和保存结果的文件夹路径
-    #原图
+    #Setting the image folder path and the folder path for saving results
+    #Raw picture
     path = args.path
-    #标签文件路径
+    #Label File Path
     masks_path=args.masks_path
-    #原图文件路径
+    #Original File Path
     image_folder = args.image_folder
-    # 存放分割结果的文件夹路径（每种浓度结果存放一起）
+    # Path to the folder where the segmentation results are stored (results for each concentration are stored together)
     output_folder = args.output_folder
-    # 存放单个细胞分割文件路径（每张图片结果单独存放）
+    # Path to store individual cell segmentation files (each image result is stored separately)
     output_fen = args.output_fen
 
 
-    #原图->标签
+    #Original->Label
     os.makedirs(masks_path, exist_ok=True)
     filenames =os.listdir(path)
-    #加载模型
+    #Loading Models
     model = models.Cellpose(gpu=use_GPU, model_type='cyto',nchan=3)
     channels = [1,1]
     for filename in filenames:
       print(f"begin:{filename}")
       files = []
       paths = os.path.join(path,filename)
-      #创建目录
+      #Create a catalog
       masks_t=os.path.join(masks_path,filename)
       os.makedirs(masks_t, exist_ok=True)
       path_t = os.listdir(paths)
@@ -51,7 +51,7 @@ def main(args):
         save_files=os.path.join(masks_t,path_t[i])
         mask.save(save_files)
 
-    #标签分割
+    #Label Segmentation
     for image_files in os.listdir(masks_path):
         output_folder_w=os.path.join(output_folder,image_files)
         os.makedirs(output_folder_w,exist_ok=True)
@@ -60,7 +60,7 @@ def main(args):
         f_image_files_w=os.path.join(output_fen,image_files)
         os.makedirs(f_image_files_w, exist_ok=True)
         for image_file in os.listdir(image_files_w):
-            #读取图像
+            #Read image
             ss = image_file.split('-')
             # img_file = ss[0]+'-'+ss[1]+'-w2.tif'
             img_file =image_file
@@ -74,22 +74,22 @@ def main(args):
             grad_x = cv2.Sobel(gray, cv2.CV_16S, 1, 0, ksize=3)
             grad_y = cv2.Sobel(gray, cv2.CV_16S, 0, 1, ksize=3)
 
-            # 计算梯度的绝对值，并将其转换回 8 位
+            # Calculates the absolute value of the gradient and converts it back to 8 bits
             abs_grad_x = cv2.convertScaleAbs(grad_x)
             abs_grad_y = cv2.convertScaleAbs(grad_y)
-            # 合并梯度（近似）
+            # Combined gradient (approximate)
             edges = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
-            # 获取每个细胞的轮廓信息
+            # Obtain profile information for each cell
             contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-            # 保存每个细胞的位置信息
+            # Save the location information of each cell
             cell_positions = []
 
             for i, contour in enumerate(contours):
-                # 获取每个细胞的边界框
+                # Get the bounding box for each cell
                 x, y, w, h = cv2.boundingRect(contour)
                 if w>=10 and h>=10 and w<45 and h<45:
-                    # 根据坐标信息进行图像切割
+                    # Image cutting based on coordinate information
                     cropped_image = image[y:y + h, x:x + w]
                     output_image_path = os.path.join(output_folder_w, f'{img_file[:-4]}_{x}_{y}.jpg')
                     output_image_path_ = os.path.join(fen_img_path, f'{img_file[:-4]}_{x}_{y}.jpg')

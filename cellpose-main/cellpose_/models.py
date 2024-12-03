@@ -18,20 +18,20 @@ from .resnet_torch import CPnet
 from .core import assign_device, check_mkl, run_net, run_3D
 
 _MODEL_URL = "https://www.cellpose.org/models"
-#尝试从环境变量中获取名为CELLPOSE_LOCAL_MODELS_PATH 的值，如果设置了这个环境变量，那么它将作为Cellpose模型的本地存储路径。
+#Try to get the value named CELLPOSE_LOCAL_MODELS_PATH from the environment variable, which, if set, will serve as the local storage path for Cellpose models.
 _MODEL_DIR_ENV = os.environ.get("CELLPOSE_LOCAL_MODELS_PATH")
-#默认本地模型存储路径，在用户主目录下的 .cellpose_.models下
+#Default local model storage path, under .cellpose_.models in the user home directory
 _MODEL_DIR_DEFAULT = pathlib.Path.home().joinpath(".cellpose_", "models")
-#确定模型最终路径
+#Determine the final path of the model
 MODEL_DIR = pathlib.Path(_MODEL_DIR_ENV) if _MODEL_DIR_ENV else _MODEL_DIR_DEFAULT
-#模型权重不匹配，只可以用cyto3 和 cyto
+#The model weights do not match and can only be used with cyto3 and cyto
 MODEL_NAMES = [
     "cyto3", "nuclei", "cyto2_cp3", "tissuenet_cp3", "livecell_cp3", "yeast_PhC_cp3",
     "yeast_BF_cp3", "bact_phase_cp3", "bact_fluor_cp3", "deepbacs_cp3", "cyto2", "cyto",
     "transformer_cp3", "neurips_cellpose_default", "neurips_cellpose_transformer",
     "neurips_grayscale_cyto2"
 ]
-#如果你有其它类型的权重也可以加进来
+#If you have other types of weights you can add them too
 MODEL_LIST_PATH = os.fspath(MODEL_DIR.joinpath("gui_models.txt"))
 
 normalize_default = {
@@ -65,7 +65,7 @@ def size_model_path(model_type):
             basename = "size_%s.npy" % model_type
         return cache_model_path(basename)
 
-#从给定地址下载预训练文件
+#Download the pre-training file from the given address
 def cache_model_path(basename):
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     url = f"{_MODEL_URL}/{basename}"
@@ -533,7 +533,7 @@ class SizeModel():
             batch_size=batch_size, resample=False,
             rescale=self.diam_mean / diam_style if self.diam_mean > 0 else 1,
             diameter=None, interp=False)[0]
-        #计算masks等效直径
+        #Calculate masks equivalent diameter
         diam = utils.diameters(masks)[0]
         diam = self.diam_mean if (diam == 0 or np.isnan(diam)) else diam
         return diam, diam_style

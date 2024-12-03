@@ -46,12 +46,12 @@ def main(args):
                                    transforms.ToTensor(),
                                    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])}
 
-    # 实例化训练数据集
+    # Instantiating the training dataset
     train_dataset = MyDataSet(images_path=train_images_path,
                               images_class=train_images_label,
                               transform=data_transform["train"])
 
-    # 实例化验证数据集
+    # Instantiating a Validation Dataset
     val_dataset = MyDataSet(images_path=val_images_path,
                             images_class=val_images_label,
                             transform=data_transform["val"])
@@ -73,7 +73,7 @@ def main(args):
                                              num_workers=nw,
                                              collate_fn=val_dataset.collate_fn)
 
-    # 如果存在预训练权重则载入
+    # Load pre-trained weights if present
     # model = DarkNet53(class_dim=args.num_classes).to(device)
     # model = densenet121(num_classes=args.num_classes).to(device)
     model = resnet34(num_class=args.num_classes).to(device)
@@ -84,10 +84,10 @@ def main(args):
         else:
             raise FileNotFoundError("not found weights file: {}".format(args.weights))
 
-    # 是否冻结权重
+    # Whether to freeze weights
     if args.freeze_layers:
         for name, para in model.named_parameters():
-            # 除最后的全连接层外，其他权重全部冻结
+            # All weights are frozen except for the last fully connected layer
             if "classifier" not in name:
                 para.requires_grad_(False)
 
@@ -99,7 +99,7 @@ def main(args):
     accuracy = 0
 
     results_file = ".//process//Resnet34_224-{}.txt".format(datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
-    save_path = 'weights/Resnet34_224.pth'
+    save_path = 'XXX'
 
     for epoch in range(args.epochs):
         # train
@@ -121,7 +121,7 @@ def main(args):
                 outputs = model(inputs)
                 preds = torch.max(outputs, dim=1)[1]
                 preds_np = preds.cpu().numpy()
-                max_label = preds_np.max()  # 或者根据数据集的最大类别数设定
+                max_label = preds_np.max()  # Or set the maximum number of categories based on the dataset
                 for label in preds_np:
                     all_preds.append(label)
                 labels_np = labels.cpu().numpy()
@@ -142,7 +142,7 @@ def main(args):
             best_epoch = epoch
             torch.save(model.state_dict(), save_path)
 
-        # 将过程记录到文件
+        # Documenting the process
         with open(results_file, 'a') as f:
             train_info = f"[epoch: {epoch}]\n" \
                          f"train_loss: {mean_loss:.4f}\t" \

@@ -200,7 +200,7 @@ class MainNet(nn.Module):
         '---------------------------------------------------------'
 
         self.convset_26 = nn.Sequential(
-            ConvSet(768, 512)  # 经concat，通道相加512+256=768
+            ConvSet(768, 512)  # After concat, the channels add up to 512+256=768
         )
 
         self.detection_26 = nn.Sequential(
@@ -218,7 +218,7 @@ class MainNet(nn.Module):
         '---------------------------------------------------------'
 
         self.convset_52 = nn.Sequential(
-            ConvSet(512, 512)  # 经concat，通道相加256+256=512
+            ConvSet(512, 512)  # After concat, the channels add up to 256+256=512
         )
 
         self.detection_52 = nn.Sequential(
@@ -232,13 +232,13 @@ class MainNet(nn.Module):
         x_13 = self.d13(x_26)
 
         x_13_ = self.convset_13(x_13)
-        out_13 = self.detection_13(x_13_)  # 13*13输出
+        out_13 = self.detection_13(x_13_)  # 13*13 output
 
         y_13_ = self.conv_13(x_13_)
         y_26 = self.up_to_26(y_13_)
         '----------------------------------------------------------'
 
-        y_26_cat = torch.cat((y_26, x_26), dim=1)  # 26*26连接
+        y_26_cat = torch.cat((y_26, x_26), dim=1)  # 26*26 connection
         x_26_ = self.convset_26(y_26_cat)
         out_26 = self.detection_26(x_26_)
 
